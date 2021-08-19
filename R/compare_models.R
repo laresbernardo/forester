@@ -33,7 +33,7 @@
 compare_models <- function(models, data_test, target, metric = NULL){
   
   ### Starting conditions 
-  if (class(models) != "list"){
+  if (any(class(models) != "list")){
     stop("Models should be passed as a list")
   }
   

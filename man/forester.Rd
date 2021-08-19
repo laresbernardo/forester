@@ -4,7 +4,18 @@
 \alias{forester}
 \title{Function for training models}
 \usage{
-forester(data, target, type, metric = NULL, data_test = NULL)
+forester(
+  data,
+  target,
+  type,
+  metric = NULL,
+  data_test = NULL,
+  threshold_na = 0.5,
+  remove_outliers = FALSE,
+  fill_na = FALSE,
+  scaling = NULL,
+  num_features = NULL
+)
 }
 \arguments{
 \item{metric}{string containing name of mertic based on which the model will be selected.

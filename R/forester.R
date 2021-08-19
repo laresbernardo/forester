@@ -21,14 +21,12 @@
 ##
 
 
-forester <- function(data, target, type, metric = NULL, data_test = NULL)
-{
+forester <- function(data, target, type, metric = NULL, data_test = NULL, threshold_na = 0.5, remove_outliers = FALSE, fill_na = FALSE, scaling = NULL, num_features = NULL){
+  data <- check_conditions(data, target, type)
   
   ### If data_test is blank, it is needed to split data into data_train and data_test
-  if (is.null(data_test))
-  {
-    if (type == "regression")
-    {
+  if (is.null(data_test)){
+    if (type == "regression"){
       # Split data in ratio 4:1
       sample_size <- floor(0.8 * nrow(data))
       set.seed(123)
@@ -38,8 +36,7 @@ forester <- function(data, target, type, metric = NULL, data_test = NULL)
       data_test  <- data[-train_index,]
     }
     
-    if (type=="classification")
-    {
+    if (type=="classification"){
       # Split data by ratio 4:1, while stratification is needed.
       uniq <- unique(data[[target]])
       data_negative <- data[data[[target]] == uniq[1],]
@@ -55,14 +52,32 @@ forester <- function(data, target, type, metric = NULL, data_test = NULL)
       data_train <- rbind(data_positive[train_index_pos,], data_negative[train_index_neg,])
       data_test  <- rbind(data_positive[-train_index_pos,], data_negative[-train_index_neg,])
     }
+    
+    ### Shuffering rows in data_train and data_test:
+    rows_train <- sample(nrow(data_train))
+    rows_test  <- sample(nrow(data_test))
+    
+    data_train <- data_train[rows_train,]
+    data_test  <- data_test[rows_test,]
+  } else {
+    data_test <- check_conditions(data_test, target, type)
+    
+    # Check structure of data_test:
+    if (!(setequal(colnames(data_train),colnames(data_test)))){
+      stop("Column names in train data set and test data set are not identical.")
+    }
   }
+
   
-  ### Shuffering rows in data_train and data_test:
-  rows_train <- sample(nrow(data_train))
-  rows_test  <- sample(nrow(data_test))
-  
-  data_train <- data_train[rows_train,]
-  data_test  <- na.omit(data_test[rows_test,])
+  # Feature engineering step 
+  processed_data <- feature_engineering_function(data_train, data_test, target,
+                                                 type, threshold_na = threshold_na,
+                                                 remove_outliers = remove_outliers,
+                                                 fill_na = fill_na,
+                                                 scaling = scaling, 
+                                                 num_features = num_features)
+  data_train <- processed_data[[1]]
+  data_test <- processed_data[[2]]
   
   ### Creating models:
   ranger_exp   <- make_ranger(data_train, target, type)
@@ -85,5 +100,3 @@ forester <- function(data, target, type, metric = NULL, data_test = NULL)
   best_model <- compare_models(models, data_test, target, metric)
   
 }
-
-

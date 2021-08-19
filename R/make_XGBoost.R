@@ -48,41 +48,15 @@
 #' plot(model_performance(titanic_explainer))
 ##
 
-make_xgboost <- function(data, target, type = "regression")
-{
-  ### Conditions:
-  # Check data class
-  if (!any(class(data) %in% c("data.frame", "dgCMatrix", "matrix", "data.table")))
-    stop("Object is not one of the types: 'data.frame', 'dgCMatrix', 'matrix', 'data.table")
-  
-  # Unify data class to data frame
-  if (any(class(data) == "matrix"))
-  {
-    data <- as.data.frame(data)
-  }
-  if (any(class(data) == "data.table"))
-  {
-    data <- as.data.frame(data)
-  }
-  if (any(class(data) == "dgCMatrix"))
-  {
-    data <- as.data.frame(as.matrix(data))
-  }
+make_xgboost <- function(data, target, type = "regression"){
+  # ### Conditions:
   
   ### Data processing level 1/2 (remove NAs, split label and training frame,...)
   # Remove rows with NA values (I will write in the documentation of function):
+  
+  data <- check_conditions(data, target, type)
+  
   data <- na.omit(data)
-  
-  # Checking if data frame is empty
-  if (nrow(data) == 0 | ncol(data) < 2) {
-    stop("The data frame is empty or has too little columns.")
-  }
-  
-  # Check if target is one of colnames of data frame
-  if (!is.character(target) | !(target %in% colnames(data)))
-    stop(
-      "Either 'target' input is not a character or data does not have column named similar to 'target'"
-    )
   
   # Change character columns to factors
   data[sapply(data, is.character)] <-
@@ -90,12 +64,6 @@ make_xgboost <- function(data, target, type = "regression")
   
   # Extract the target vector from our dataframe:
   label_column <- data[[target]]
-  
-  # Check condition for type between "classification" and "regression":
-  if ((type != "classification") & (type != "regression"))
-    stop("Type of problem is invalid.")
-  
-  
   
   ### Conditions and processing on target column:
   # Binary Classification
@@ -176,6 +144,7 @@ make_xgboost <- function(data, target, type = "regression")
   
   ### Creating predict function:
   xgboost_predict <- function(object, newdata) {
+    newdata <- na.omit(newdata)
     names_factor_newdata <-
       colnames(newdata)[sapply(newdata, is.factor)]
     vector_index_newdata <-
@@ -197,11 +166,8 @@ make_xgboost <- function(data, target, type = "regression")
     model <- xgboost::xgb.train(
       data = dtrain,
       verbose = 0,
-      max.depth = 8,
-      eta = 0.3,
-      nrounds = 4,
-      nthread = 2,
-      objective = "reg:linear"
+      nrounds = 50,
+      objective = "reg:squarederror"
     )
   }
   
@@ -210,10 +176,7 @@ make_xgboost <- function(data, target, type = "regression")
     model <- xgboost::xgb.train(
       data = dtrain,
       verbose = 0,
-      max.depth = 8,
-      eta = 0.3,
-      nrounds = 4,
-      nthread = 2,
+      nrounds = 50,
       eval_metric = "logloss",
       objective = "binary:logistic"
     )

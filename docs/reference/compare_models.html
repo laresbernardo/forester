@@ -137,7 +137,7 @@ the same type of task. Function compares them based on metric which can be chose
 and returns the best model</p>
     </div>
 
-    <pre class="usage"><span class='fu'>compare_models</span><span class='op'>(</span><span class='va'>models</span>, <span class='va'>metric</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>compare_models</span><span class='op'>(</span><span class='va'>models</span>, <span class='va'>data_test</span>, <span class='va'>target</span>, metric <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -147,9 +147,17 @@ and returns the best model</p>
       <td><p>list of models to compare. Models shoud be either <code>forester_model</code> or <code>explainer</code> object.</p></td>
     </tr>
     <tr>
+      <th>data_test</th>
+      <td><p>data frame for evaluation models</p></td>
+    </tr>
+    <tr>
+      <th>target</th>
+      <td><p>character indicating the target column in data test table</p></td>
+    </tr>
+    <tr>
       <th>metric</th>
       <td><p>string containing name of mertic based on which the model will be selected. 
-Metric shoud be written in small letters</p></td>
+Metric shoud be written in small letters. Can be omited.</p></td>
     </tr>
     </table>
 
@@ -173,20 +181,13 @@ Metric shoud be written in small letters</p></td>
 
 <span class='va'>models</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='va'>lightgbm_explained</span>, <span class='va'>ranger_explained</span><span class='op'>)</span>
 
-<span class='fu'>compare_models</span><span class='op'>(</span><span class='va'>models</span>, <span class='st'>"rmse"</span><span class='op'>)</span>
+<span class='va'>best_model</span> <span class='op'>&lt;-</span> <span class='fu'>compare_models</span><span class='op'>(</span><span class='va'>models</span>, <span class='va'>apartments</span>, <span class='st'>"m2.price"</span>, <span class='st'>"rmse"</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; 
 #&gt; 
 #&gt; |model    |      rmse|       mse|        r2|      mad|
 #&gt; |:--------|---------:|---------:|---------:|--------:|
 #&gt; |LightGBM |  84.37347|  7118.883| 0.9913318| 52.30193|
-#&gt; |Ranger   | 145.08036| 21048.310| 0.9743710| 82.04869|</div><div class='output co'>#&gt; [[1]]
-#&gt; Model label:  LightGBM 
-#&gt; Model class:  lgb.Booster,R6 
-#&gt; Data head  :
-#&gt;   construction.year surface floor no.rooms    district
-#&gt; 1              1953      25     3        1 Srodmiescie
-#&gt; 2              1992     143     9        5     Bielany
-#&gt; </div><div class='input'><span class='co'># }</span>
+#&gt; |Ranger   | 145.08036| 21048.310| 0.9743710| 82.04869|</div><div class='input'><span class='co'># }</span>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

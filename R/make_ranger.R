@@ -32,41 +32,11 @@
 
 make_ranger <- function(data, target, type) {
   ### Conditions
-  # Checking data class
-  if (!any(class(data) %in% c("data.frame", "dgCMatrix", "matrix", "data.table"))) {
-    stop("Object is not one of the types: 'data.frame', 'dgCMatrix', 'matrix', 'data.table")
-  }
-
-  # Changing data to normal data frame
-  if (any(class(data) != "data.frame")) {
-    if (any(class(data) == 'dgCMatrix')) {
-        data <- as.data.frame(as.matrix(data))
-    } else if (any(class(data) == 'matrix')) {
-        data <- as.data.frame(data)
-    } else if (any(class(data) == 'data.table')) {
-        data <- as.data.frame(data)
-    }
-  }
-  
+  data <- check_conditions(data, target, type)
   
   ### Data processing level 1/2 (remove NAs, split label and training frame,...)
   # Remove rows with NA values (I will write in the documentation of function):
   data <- na.omit(data)
-  
-  # Checking if data frame is empty
-  if (nrow(data) == 0 | ncol(data) < 2) {
-    stop("The data frame is empty or has too little columns.")
-  }
-  
-  # Checking if target column is in data frame
-  if (typeof(target) != 'character' | !(target %in% colnames(data))) {
-    stop("Either 'target' input is not a character or data does not have column named similar to 'target'")
-  }
-  
-  # Checking if type is correct
-  if (typeof(type) != 'character' | (type != "classification" & type != "regression")) {
-    stop("Type of problem is invalid.")
-  }
   
   # Creating formula
   # try to convert column names to names without znaki

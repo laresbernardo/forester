@@ -51,41 +51,13 @@
 #'
 ##
 
-make_lightgbm <- function(data, target, type = "regression")
-{
+make_lightgbm <- function(data, target, type = "regression"){
   ### Conditions:
-  # Check data class
-  if (!any(class(data) %in% c("data.frame", "dgCMatrix", "matrix", "data.table")))
-    stop("Object is not one of the types: 'data.frame', 'dgCMatrix', 'matrix', 'data.table")
-
-  # Unify data class to data frame
-  if (any(class(data) == "matrix"))
-  {
-    data <- as.data.frame(data)
-  }
-  if (any(class(data) == "data.table"))
-  {
-    data <- as.data.frame(data)
-  }
-  if (any(class(data) == "dgCMatrix"))
-  {
-    data <- as.data.frame(as.matrix(data))
-  }
+  data <- check_conditions(data, target, type)
   
   ### Data processing level 1/2 (remove NAs, split label and training frame,...)
   # Remove rows with NA values (I will write in the documentation of function):
   data <- na.omit(data)
-
-  # Checking if data frame is empty
-  if (nrow(data) == 0 | ncol(data) < 2) {
-    stop("The data frame is empty or has too little columns.")
-  }
-
-  # Check if target is one of colnames of data frame
-  if (!is.character(target) | !(target %in% colnames(data)))
-    stop(
-      "Either 'target' input is not a character or data does not have column named similar to 'target'"
-    )
 
   # Change character columns to factors
   data[sapply(data, is.character)] <-
@@ -93,13 +65,6 @@ make_lightgbm <- function(data, target, type = "regression")
 
   # Extract the target vector from our dataframe:
   label_column <- data[[target]]
-
-  # Check condition for type between "classification" and "regression":
-  ## Classification type
-  if ((type != "classification") & (type != "regression"))
-    stop("Type of problem is invalid.")
-
-
 
   ### Conditions and processing on target column:
   # Binary Classification
@@ -180,6 +145,7 @@ make_lightgbm <- function(data, target, type = "regression")
 
   ### Creating predict function:
   lightgbm_predict <- function(object, newdata) {
+    newdata <- na.omit(newdata)
     newdata_encoded <-
       lightgbm::lgb.convert_with_rules(data = newdata, rules = data_info_rules$rules)$data
     data_encoded_matrix_newdata <- as.matrix(newdata_encoded)

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Automated function for explaining catboost models — make_catboost • forester</title>
+<title>Automatic Function for Feature Engineering — feature_engineering_function • forester</title>
 
 
 <!-- jquery -->
@@ -45,9 +45,8 @@
 
 
 
-<meta property="og:title" content="Automated function for explaining catboost models — make_catboost" />
-<meta property="og:description" content="Function make_catboost creates catboost model with default parameters using ranger library and
-wraps it with the explainer." />
+<meta property="og:title" content="Automatic Function for Feature Engineering — feature_engineering_function" />
+<meta property="og:description" content="Function feature_engineering covers fundamental techniques in ML Feature Engineering process." />
 
 
 
@@ -125,58 +124,82 @@ wraps it with the explainer." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Automated function for explaining catboost models</h1>
-    <small class="dont-index">Source: <a href='https://github.com/ModelOriented/forester/blob/master/R/make_catboost.R'><code>R/make_catboost.R</code></a></small>
-    <div class="hidden name"><code>make_catboost.Rd</code></div>
+    <h1>Automatic Function for Feature Engineering</h1>
+    <small class="dont-index">Source: <a href='https://github.com/ModelOriented/forester/blob/master/R/feature_engineering.R'><code>R/feature_engineering.R</code></a></small>
+    <div class="hidden name"><code>feature_engineering_function.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Function <code>make_catboost</code> creates catboost model with default parameters using ranger library and
-wraps it with the explainer.</p>
+    <p>Function <code>feature_engineering</code> covers fundamental techniques in ML Feature Engineering process.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>make_catboost</span><span class='op'>(</span><span class='va'>data</span>, <span class='va'>target</span>, <span class='va'>type</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>feature_engineering_function</span><span class='op'>(</span>
+  <span class='va'>data_train</span>,
+  <span class='va'>data_test</span>,
+  <span class='va'>target</span>,
+  <span class='va'>type</span>,
+  threshold_na <span class='op'>=</span> <span class='fl'>0.5</span>,
+  remove_outliers <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  fill_na <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  scaling <span class='op'>=</span> <span class='cn'>NULL</span>,
+  num_features <span class='op'>=</span> <span class='cn'>NULL</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>data</th>
-      <td><p>training set for ranger model. It can be data frame, matrix, data.table or dgCMatrix. Note: data should contain target column</p></td>
+      <th>data_train</th>
+      <td><p>dataset, used for training models. Class of data_train is one of those classes: data.frame, matrix, data.table or dgCMatrix. NOTE: data_train includes target column.</p></td>
+    </tr>
+    <tr>
+      <th>data_test</th>
+      <td><p>dataset having target column, used for evaluating models' performance, having same structure with data_train.</p></td>
     </tr>
     <tr>
       <th>target</th>
-      <td><p>name of a target value. Should be character. Has to be in data frame</p></td>
+      <td><p>character, indicating name of the target column in data_train.</p></td>
     </tr>
     <tr>
       <th>type</th>
-      <td><p>specify weather it is classification task or regression. Should be one of these characters: "classif", "regr"</p></td>
+      <td><p>character, defining the task. Option is "regression" or "classification", namely binary classification.</p></td>
+    </tr>
+    <tr>
+      <th>threshold_na</th>
+      <td><p>number, ranged from 0 to 1. Function removes columns having percentage of NAs higher than value of threshold_na.</p></td>
+    </tr>
+    <tr>
+      <th>remove_outliers</th>
+      <td><p>logical, default is FALSE. If TRUE, all outliers in numeric columns will be removed, except for target column.</p></td>
+    </tr>
+    <tr>
+      <th>fill_na</th>
+      <td><p>logical, default is FALSE. If TRUE, missing values in target column are removed, missing values in categorical columns are replaced by mode and
+missing values in numeric columns are substituted by median of corresponding columns.</p></td>
+    </tr>
+    <tr>
+      <th>scaling</th>
+      <td><p>character, default is NULL. Parameter is used for scaling features. Options are "standardize", "minmax" and NULL.</p></td>
+    </tr>
+    <tr>
+      <th>num_features</th>
+      <td><p>numeric, default is NULL. Parameter indicates number of most important features, which are chosen from the train dataset. Automatically, those important
+features will be kept in the train and test datasets.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>An object of the class <code>explainer</code>.</p>
+    <p>A list contains 2 objects: processed data_train and process data_test.</p>
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>With adjustable arguments, users can independently decide how function deals with outliers, NAs value,
+feature scaling and important features selection. Furthermore, options for sampling methods will pop up in
+case of classification problem.</p>
     <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
 
-    <p>Explanatory Model Analysis. Explore, Explain, and Examine Predictive Models. <a href='https://ema.drwhy.ai/'>https://ema.drwhy.ai/</a></p>
+    <p>forester library <a href='https://modeloriented.github.io/forester/'>https://modeloriented.github.io/forester/</a></p>
 
-    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='co'># \donttest{</span>
-<span class='co'># regression</span>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://dalex.drwhy.ai'>DALEX</a></span><span class='op'>)</span>
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>apartments</span>, package<span class='op'>=</span><span class='st'>"DALEX"</span><span class='op'>)</span>
-
-<span class='va'>exp</span> <span class='op'>&lt;-</span> <span class='fu'>make_catboost</span><span class='op'>(</span><span class='va'>apartments</span>, <span class='st'>"m2.price"</span>, <span class='st'>"regression"</span><span class='op'>)</span>
-<span class='co'># plot(model_parts(exp))</span>
-
-<span class='co'># binary classification</span>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://dalex.drwhy.ai'>DALEX</a></span><span class='op'>)</span>
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>titanic_imputed</span>, package<span class='op'>=</span><span class='st'>"DALEX"</span><span class='op'>)</span>
-<span class='va'>exp</span> <span class='op'>&lt;-</span> <span class='fu'>make_catboost</span><span class='op'>(</span><span class='va'>titanic_imputed</span>, <span class='st'>"survived"</span>, <span class='st'>"classification"</span><span class='op'>)</span>
-<span class='co'># plot(model_parts(exp))</span>
-<span class='co'># }</span>
-</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
