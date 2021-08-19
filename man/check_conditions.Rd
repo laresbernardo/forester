@@ -9,9 +9,9 @@ check_conditions(data, target, type)
 \arguments{
 \item{data}{dataset, used for training models. Class of data_train is one of those classes: data.frame, matrix, data.table or dgCMatrix. NOTE: data_train includes target column.}
 
-\item{target}{character, indicating name of the target column in data_train, placed in quotation marks "...".}
+\item{target}{character, indicating name of the target column in data_train.}
 
-\item{type}{character, defining the task, placed in quotation marks "...". Option is "regression" or "classification", namely binary classification.}
+\item{type}{character, defining the task. Option is "regression" or "classification", namely binary classification.}
 }
 \value{
 A verified dataframe, which is ready for creating ML models.
