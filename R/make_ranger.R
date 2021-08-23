@@ -30,7 +30,8 @@
 #'}
 ##
 
-make_ranger <- function(data, target, type) {
+make_ranger <- function(data, target, type, tune = FALSE, metric = NULL, iter = 20) {
+  
   ### Conditions
   data <- check_conditions(data, target, type)
   
@@ -68,18 +69,60 @@ make_ranger <- function(data, target, type) {
           uniq[1], " -> 1 and ", uniq[2], " -> 0 ", sep = "")
       )
     }
-    
-    # Creating model
-    rg <- ranger::ranger(form, data = data, classification = TRUE)
   } else {
     # Checking if target column is numeric
     if (class(data[[target]]) != 'numeric' &
         class(data[[target]]) != 'integer') {
       stop("Program is stopped. The class of target column is factor, not appropriate for regression problem")
     }
+  }
+  
+  is_classif <- type == "classification"
+  
+  if (tune){
+    #### Tuning part
+    # Validation set 
+    # data_val <-
+    # y_val <- 
     
-    #Creating a model
-    rg <- ranger::ranger(form, data = data)
+    ranger_tune_fun <- function(num.trees, sample.fraction, mtry, min.node.size){
+      ranger_tune <- ranger::ranger(form, data,
+                                    num.trees = num.trees,
+                                    mtry = ceiling(mtry * (ncol(data) - 1)),
+                                    min.node.size = ceiling(nrow(data) ^ min.node.size),
+                                    sample.fraction = sample.fraction)
+      
+      predicted <- predict(ranger_tune, data_val)
+      score <- calculate_metric(metric, predicted, y_val)
+      
+      list(Score = score, Pred = predicted)
+    }
+    
+    ### Tuning process
+    tuned_ranger <- BayesianOptimization(ranger_tune_fun,
+                                         bounds = list(num.trees = c(1L, 2000L),
+                                                       mtry = c(0, 1),
+                                                       min.node.size = c(0, 1),
+                                                       sample.fraction = c(0.1, 1)),
+                                         init_grid_dt = NULL,
+                                         init_points = 10,
+                                         n_iter = iter,
+                                         acq = "ucb",
+                                         kappa = 2.576,
+                                         eps = 0.0,
+                                         verbose = TRUE)
+    
+    best_params <- tuned_ranger$Best_Par
+    
+    rg <- ranger::ranger(form, data = data,
+                         num.trees = best_params["num.trees"],
+                         mtry = best_params["mtry"],
+                         min.node.size = best_params["min.node.size"],
+                         sample.fraction = best_params["sample.fraction"]
+                         classification = is_classif)
+    
+  } else {
+    rg <- ranger::ranger(form, data = data, classification = is_classif)
   }
   
   ### Explainer

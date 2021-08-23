@@ -22,6 +22,8 @@
 
 
 forester <- function(data, target, type, metric = NULL, data_test = NULL, threshold_na = 0.5, remove_outliers = FALSE, fill_na = FALSE, scaling = NULL, num_features = NULL){
+  message("__________________________")
+  message("FORESTER")
   data <- check_conditions(data, target, type)
   
   ### If data_test is blank, it is needed to split data into data_train and data_test
@@ -68,6 +70,8 @@ forester <- function(data, target, type, metric = NULL, data_test = NULL, thresh
     }
   }
 
+  message("__________________________")
+  message("FEATURE ENGINEERING")
   
   # Feature engineering step 
   processed_data <- feature_engineering_function(data_train, data_test, target,
@@ -80,6 +84,9 @@ forester <- function(data, target, type, metric = NULL, data_test = NULL, thresh
   data_test <- processed_data[[2]]
   
   ### Creating models:
+  message("__________________________")
+  message("CREATING MODELS")
+  
   ranger_exp   <- make_ranger(data_train, target, type)
   suppressMessages(catboost_exp <- make_catboost(data_train, target, type))
   suppressMessages(xgboost_exp  <- make_xgboost(data_train, target, type))
@@ -96,6 +103,8 @@ forester <- function(data, target, type, metric = NULL, data_test = NULL, thresh
                                  uniq_label[1],
                                  uniq_label[2])
   }
+  message("__________________________")
+  message("COMPARISON")
   
   best_model <- compare_models(models, data_test, target, metric)
   

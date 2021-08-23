@@ -110,7 +110,9 @@ compare_models <- function(models, data_test, target, metric = NULL){
                          decreasing = as.logical(TRUE + negative)),]
   
   # Printing table
-  print(knitr::kable(final, row.names = F))
+  message("Results of compared models:")
+  print(knitr::kable(final, row.names = F, "simple"))
+  message("The best model based on ", metric, " metric is ", best_model$label, ".")
   
   return(best_model)
 }

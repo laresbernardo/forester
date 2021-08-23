@@ -55,30 +55,44 @@ feature_engineering_function  <- function(data_train, data_test, target, type, t
   num_rows <- nrow(data_train)
   num_cols <- ncol(data_train)
   message("Original shape of train data frame: ", num_rows, " rows, ", num_cols, " columns")
+  message("Original shape of test data frame: ", nrow(data_test), " rows, ", ncol(data_test), " columns")
   data_train <- unique(data_train)
   
   if (nrow(data_train) != num_rows){
+    message("_____________")
+    message("Duplications")
     message("Shape of data train frame after deleting duplicates: ",
             nrow(data_train), " rows, ", ncol(data_train), " columns")
   }
 
+  message("_____________")
+  message("NA values")
   ### Imputation:
   # Messages informing percentage of NAs in data_train and data_test:
-  message("percentage of NAs in data_train: ",sum(is.na(data_train))/prod(dim(data_train)) * 100, "%")
-  message("percentage of NAs in data_test: ",sum(is.na(data_test))/prod(dim(data_test))* 100, "%")
-  
+  if (any(is.na(data_train)) | any(is.na(data_test))){
+    message("percentage of NAs in data_train: ",sum(is.na(data_train))/prod(dim(data_train)) * 100, "%")
+    message("percentage of NAs in data_test: ",sum(is.na(data_test))/prod(dim(data_test))* 100, "%")
+  } else {
+    message("There is no NA values in your data.")
+  }
+
   # Extract names of columns in train & test having percentage of NAs greater than threshold_na:
   drop_train <- colnames(data_train)[colSums(is.na(data_train))/nrow(data_train) >= threshold_na]
   drop_test  <- colnames(data_test)[colSums(is.na(data_test))/nrow(data_test) >= threshold_na]
   drops_col  <- unique(c(drop_train,drop_test))
   
-  # Remove those columns dissatisfying threshold condition:
-  data_train <- data_train[ , !(names(data_train) %in% drops_col), drop = FALSE]
-  data_test  <- data_test[ , !(names(data_test) %in% drops_col), drop = FALSE]
+  if (length(drops_col) != 0){
+    # Remove those columns dissatisfying threshold condition:
+    data_train <- data_train[ , !(names(data_train) %in% drops_col), drop = FALSE]
+    data_test  <- data_test[ , !(names(data_test) %in% drops_col), drop = FALSE]
+    
+    message("Deleting columns with precentage of NA values grater than treshold = ", threshold_na)
+    message("Deleted columns are: ", drops_col)
+  }
   
   #### Filling NAs:
 
-  if (fill_na){
+  if (fill_na & any(is.na(data_train))){
     # deleting na values from target column 
     data_train <- data_train[!is.na(data_train[[target]]),]
     
@@ -118,17 +132,26 @@ feature_engineering_function  <- function(data_train, data_test, target, type, t
         }
       }
     }
-    message("percentage of NAs in data_train after filling: ",sum(is.na(data_train))/prod(dim(data_train)))
-  } else {
-    message("Deleting rows with na values in train set. If you want to fill NA values set fill_na argument to TRUE")
+    message("NA values has been filled.")
+  } else if (any(is.na(data_train))){
+    message("Deleting rows with NA values in train set. If you want to fill NA values use fill_na = TRUE")
     data_train <- na.omit(data_train)
+    message("Shape of data train frame after deleting NA values: ",
+            nrow(data_train), " rows, ", ncol(data_train), " columns")
   }
   
   ### Removing na values from train set
-  data_test <- na.omit(data_test)
-  
+  if (any(is.na(data_test))){
+    message("Deleting rows with NA values in test set.")
+    data_test <- na.omit(data_test)
+    message("Shape of data train frame after deleting NA values: ",
+            nrow(data_train), " rows, ", ncol(data_train), " columns")
+  }
+
   ### Removing outliers
   if (remove_outliers){
+    message("_____________")
+    message("Outliers")
     # Remove outliers from a vector
     remove_out <- function(x, na.rm = TRUE) {
       qnt <- quantile(x, probs = c(.25, .75), na.rm = na.rm)
@@ -156,6 +179,9 @@ feature_engineering_function  <- function(data_train, data_test, target, type, t
       return (na.omit(df_marked))
     }
     remove_all_outliers(data_train, target)
+    message("Outliers have been removed.")
+    message("Shape of data train frame after deleting outliers: ",
+            nrow(data_train), " rows, ", ncol(data_train), " columns")
   }
   
   ### Over or under sampling 
@@ -167,6 +193,8 @@ feature_engineering_function  <- function(data_train, data_test, target, type, t
     percent_class_2 <- round((100 - percent_class_1), 4)
     
     if (percent_class_1 < 10 | percent_class_1 > 90){
+      message("_____________")
+      message("Imbalanced data")
       message("Your training set has: ",nrow(data_train),"rows in total.")
       message("Class ", uniq[1], " accounts for ", percent_class_1, "%")
       message("Class ", uniq[2], " accounts for ", percent_class_2, "%")
@@ -193,6 +221,9 @@ feature_engineering_function  <- function(data_train, data_test, target, type, t
         ind1   <- sample(class_1_ind, n_samp)
         ind2   <- sample(class_2_ind, n_samp)
         data_train <- data_train[c(ind1,ind2),]
+        message("Performing undersampling")
+        message("Shape of data train frame after undersampling: ",
+                nrow(data_train), " rows, ", ncol(data_train), " columns")
         
       } else if (choice == 2){
         # Oversampling
@@ -200,11 +231,16 @@ feature_engineering_function  <- function(data_train, data_test, target, type, t
         ind1 <- sample(class_1_ind, n_samp, replace = !(length(class_1_ind) == n_samp))
         ind2 <- sample(class_2_ind, n_samp, replace = !(length(class_2_ind) == n_samp))
         data_train <- data_train[c(ind1,ind2), ]
+        message("Performing oversampling")
+        message("Shape of data train frame after oversampling: ",
+                nrow(data_train), " rows, ", ncol(data_train), " columns")
       }
     }
   }
   
   if (!is.null(scaling)){
+    message("_____________")
+    message("Scaling")
     ### Standardize/ Normalize numerical features:
     # take dataframe with numeric columns only except target:
     num_cols_train <- unlist(lapply(data_train, is.numeric)) & colnames(data_train) != target
@@ -217,6 +253,7 @@ feature_engineering_function  <- function(data_train, data_test, target, type, t
       # Standard Scaling: mean value of zero and an unit variance value.
       data_train[num_cols_train] <- as.data.frame(scale(num_data_train))
       data_test[num_cols_test]  <- as.data.frame(scale(num_data_test))
+      message("Data has been standardized")
     } else {
       # Min-Max Scaling: the effects of outliers increase. Handle NAs and outliers first!
       normalize <- function(x){
@@ -225,11 +262,14 @@ feature_engineering_function  <- function(data_train, data_test, target, type, t
       
       data_train[num_cols_train] <- as.data.frame(apply(num_data_train, 2, normalize))
       data_test[num_cols_test]  <- as.data.frame(apply(num_data_test, 2, normalize))
+      message("Data has been normalized")
     }
   }
 
   ### Feature selection 
   if (!is.null(num_features)){
+    message("_____________")
+    message("Feature selection")
     tryCatch(
       {
         feat_imp <- Boruta::Boruta(data_train[,-which(names(data_train) == target)], data_train[[target]])
