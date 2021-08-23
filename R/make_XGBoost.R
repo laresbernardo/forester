@@ -49,13 +49,11 @@
 ##
 
 make_xgboost <- function(data, target, type = "regression"){
-  # ### Conditions:
+  ### Conditions:
+  data <- check_conditions(data, target, type)
   
   ### Data processing level 1/2 (remove NAs, split label and training frame,...)
   # Remove rows with NA values (I will write in the documentation of function):
-  
-  data <- check_conditions(data, target, type)
-  
   data <- na.omit(data)
   
   # Change character columns to factors
