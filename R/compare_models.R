@@ -79,12 +79,12 @@ compare_models <- function(models, data_test, target, metric = NULL){
   } else {
     if (models_type == "classification"){
       if (! metric %in% c("auc", "recall", "precision", "f1", "accuracy")){
-        stop("Wrong metric selected. For classification consider one of those metrics: 
+        stop("Wrong metric selected. For classification, consider one of those metrics: 
            auc, recall, precision, f1, accuracy")
       }
     } else {
       if (! metric %in% c("mse", "rmse", "mad", "r2")){
-        stop("Wrong metric selected. For classification consider one of those metrics: 
+        stop("Wrong metric selected. For regression, consider one of those metrics: 
            rmse, mse, mad, r2")
       }
     }
